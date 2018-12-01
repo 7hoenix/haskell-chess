@@ -37,30 +37,16 @@ instance Show Square where
 
 type ValidIndex = Int
 
-data OutOfBoundsError = OutOfBoundsError deriving (Show)
-
 whiteKnight :: Piece
 whiteKnight =
   Piece White Knight
 
-validIndex :: Int -> Either OutOfBoundsError ValidIndex
-validIndex n | n < 0 || n > 7 = Left OutOfBoundsError
-  | otherwise                 = Right n
-
-validPosition :: Int -> Int -> Either OutOfBoundsError Position
+validPosition :: Int -> Int -> Either String Position
 validPosition row column =
   case (validIndex row, validIndex column) of
-    (Left _, _) -> Left OutOfBoundsError
-    (_, Left _) -> Left OutOfBoundsError
+    (Left _, _) -> Left $ "Row out of bounds: " ++ show row
+    (_, Left _) -> Left $ "Column out of bounds: " ++ show column
     (Right validRow, Right validColumn) -> Right $ Position validRow validColumn
-
-emptyBoard :: Board
-emptyBoard = Board $ concatMap (\row ->
-  map (\column -> Square Nothing $ Position row column) [0..7]
-                         ) [0..7]
-
-printBoard :: Board -> IO ()
-printBoard board = print board
 
 place :: Piece -> Position -> Board -> Board
 place piece position (Board board) =
@@ -69,6 +55,15 @@ place piece position (Board board) =
 remove :: Position -> Board -> Board
 remove position (Board board) =
   Board $ map (\square -> clearSquare position square) board
+
+emptyBoard :: Board
+emptyBoard = Board $ concatMap (\row ->
+  map (\column -> Square Nothing $ Position row column) [0..7]
+                         ) [0..7]
+printBoard :: Board -> IO ()
+printBoard board = print board
+
+-- PRIVATE --
 
 addPieceToSquare :: Piece -> Position -> Square -> Square
 addPieceToSquare piece position (Square maybePiece currentPosition)
@@ -81,3 +76,8 @@ clearSquare position (Square maybePiece currentPosition)
   | matches = (Square Nothing currentPosition)
   | otherwise = (Square maybePiece currentPosition)
   where matches = position == currentPosition
+
+validIndex :: Int -> Either String ValidIndex
+validIndex n | n < 0 || n > 7 = Left $ "Index out of bounds: " ++ show n
+  | otherwise                 = Right n
+
