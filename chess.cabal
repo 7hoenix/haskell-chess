@@ -5,7 +5,7 @@ version:             0.1.0.0
 homepage:            https://github.com/7hoenix/chess#readme
 license:             BSD3
 license-file:        LICENSE
-author:              j7hoenix
+author:              j7hoenix (Justin Holzmann)
 maintainer:          jpholzmann@gmail.com
 copyright:           2018 j7hoenix
 category:            Web
