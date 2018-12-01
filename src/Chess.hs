@@ -61,9 +61,19 @@ emptyBoard = Board $ concatMap (\row ->
   map (\column -> Square Nothing $ Position row column) [0..7]
                          ) [0..7]
 printBoard :: Board -> IO ()
-printBoard board = print board
+printBoard board =
+  print $ byRow board
+  -- map (\row -> putStrLn row) $ byRow board
 
 -- PRIVATE --
+
+byRow :: Board -> [[Square]]
+byRow (Board board) =
+  [(take 8 board)]
+  -- mapWithIndex (\square index -> asdf square index) board
+
+mapWithIndex :: (a -> Int -> b) -> [a] -> [b]
+mapWithIndex fn list = zipWith fn list [0..]
 
 addPieceToSquare :: Piece -> Position -> Square -> Square
 addPieceToSquare piece position (Square maybePiece currentPosition)
@@ -80,4 +90,3 @@ clearSquare position (Square maybePiece currentPosition)
 validIndex :: Int -> Either String ValidIndex
 validIndex n | n < 0 || n > 7 = Left $ "Index out of bounds: " ++ show n
   | otherwise                 = Right n
-
