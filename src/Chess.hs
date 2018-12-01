@@ -4,6 +4,7 @@ module Chess
     , place
     , whiteKnight
     , validPosition
+    , remove
     ) where
 
 import Data.List
@@ -27,7 +28,12 @@ data Square = Square (Maybe Piece) Position deriving (Eq)
 instance Show Square where
   show (Square Nothing _) = " "
   show (Square (Just (Piece White Monarch)) _) = "M"
-  show (Square (Just _) _) = "a"
+  show (Square (Just (Piece White Hand)) _) = "H"
+  show (Square (Just (Piece White Rook)) _) = "R"
+  show (Square (Just (Piece White Bishop)) _) = "B"
+  show (Square (Just (Piece White Knight)) _) = "N"
+  show (Square (Just (Piece White Pawn)) _) = "P"
+  show (Square (Just _) _) = "z"
 
 type ValidIndex = Int
 
@@ -60,8 +66,18 @@ place :: Piece -> Position -> Board -> Board
 place piece position (Board board) =
   Board $ map (\square -> addPieceToSquare piece position square) board
 
+remove :: Position -> Board -> Board
+remove position (Board board) =
+  Board $ map (\square -> clearSquare position square) board
+
 addPieceToSquare :: Piece -> Position -> Square -> Square
 addPieceToSquare piece position (Square maybePiece currentPosition)
   | matches = (Square (Just piece) currentPosition)
+  | otherwise = (Square maybePiece currentPosition)
+  where matches = position == currentPosition
+
+clearSquare :: Position -> Square -> Square
+clearSquare position (Square maybePiece currentPosition)
+  | matches = (Square Nothing currentPosition)
   | otherwise = (Square maybePiece currentPosition)
   where matches = position == currentPosition
