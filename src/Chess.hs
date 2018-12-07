@@ -1,10 +1,11 @@
 module Chess
     ( printBoard
     , emptyBoard
+    , playBoard
     , place
     , whiteKnight
     , remove
-    , a1
+    , a1, a2
     ) where
 
 import Data.List
@@ -21,7 +22,7 @@ data Piece = Piece Team PieceType deriving (Eq, Show)
 
 data Team = White | Black deriving (Eq, Show)
 
-data Position = Position ValidIndex ValidIndex deriving (Show, Eq)
+data Position = Position Int Int deriving (Show, Eq)
 
 data Square = Square (Maybe Piece) Position deriving (Eq)
 
@@ -35,14 +36,26 @@ instance Show Square where
   show (Square (Just (Piece White Pawn)) _) = "P"
   show (Square (Just _) _) = "z"
 
-type ValidIndex = Int
-
 whiteKnight :: Piece
 whiteKnight =
   Piece White Knight
 
+whiteBishop :: Piece
+whiteBishop =
+  Piece White Bishop
+
+whiteHand :: Piece
+whiteHand =
+  Piece White Hand
+
 a1 :: Position
 a1 = Position 0 0
+
+a2 :: Position
+a2 = Position 1 0
+
+h8 :: Position
+h8 = Position 7 7
 
 place :: Piece -> Position -> Board -> Board
 place piece position (Board board) =
@@ -59,13 +72,27 @@ emptyBoard = Board $ concatMap (\row ->
 
 printBoard :: Board -> IO ()
 printBoard board =
-  print $ byRow board
+  print $ rows board
+
+playBoard :: Board
+playBoard = foldr (\(pos, piece) currentBoard -> place piece pos currentBoard)
+                emptyBoard
+                [(a1, whiteKnight), (a2, whiteBishop), (h8, whiteHand)]
 
 -- PRIVATE --
 
-byRow :: Board -> [[Square]]
-byRow (Board board) =
-  [(take 8 board), (take 8 board)]
+rows :: Board -> [[Square]]
+rows (Board board) =
+  [
+    (take 8 . drop 56) board,
+    (take 8 . drop 48) board,
+    (take 8 . drop 40) board,
+    (take 8 . drop 32) board,
+    (take 8 . drop 24) board,
+    (take 8 . drop 16) board,
+    (take 8 . drop 8) board,
+    (take 8 . drop 0) board
+  ]
 
 mapWithIndex :: (a -> Int -> b) -> [a] -> [b]
 mapWithIndex fn list = zipWith fn list [0..]
