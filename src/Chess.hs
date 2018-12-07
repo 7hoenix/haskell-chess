@@ -5,7 +5,9 @@ module Chess
     , place
     , whiteKnight
     , remove
+    , examine
     , a1, a2
+    , h8
     ) where
 
 import Data.List
@@ -65,6 +67,14 @@ remove :: Position -> Board -> Board
 remove position (Board board) =
   Board $ map (\square -> clearSquare position square) board
 
+examine :: Position -> Board -> Maybe Piece
+examine position (Board board) =
+  let
+    (Square maybePiece _) =
+      head $ filter (\square -> squareMatchesPosition position square) board
+  in
+  maybePiece
+
 emptyBoard :: Board
 emptyBoard = Board $ concatMap (\row ->
   map (\column -> Square Nothing $ Position row column) [0..7]
@@ -108,3 +118,13 @@ clearSquare position (Square maybePiece currentPosition)
   | matches = (Square Nothing currentPosition)
   | otherwise = (Square maybePiece currentPosition)
   where matches = position == currentPosition
+
+squareMatchesPosition :: Position -> Square -> Bool
+squareMatchesPosition position (Square maybePiece currentPosition) =
+  position == currentPosition
+
+-- addPieceToSquare :: Piece -> Position -> Square -> Square
+-- addPieceToSquare piece position (Square maybePiece currentPosition)
+--   | matches = (Square (Just piece) currentPosition)
+--   | otherwise = (Square maybePiece currentPosition)
+--   where matches = position == currentPosition
