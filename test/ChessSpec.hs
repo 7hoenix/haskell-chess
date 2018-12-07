@@ -21,9 +21,9 @@ spec = do
     it "returns nothing if empty" $ do
       Chess.examine a1 emptyBoard `shouldBe` Nothing
 
-  describe "Chess.move" $ do
-     it "no longer has piece in previous square" $ do
-       (Chess.examine a1 . Chess.move a1 h8 . Chess.place whiteKnight a1) emptyBoard `shouldBe` Nothing
-     it "has piece in new square" $ do
-       (Chess.examine h8 . Chess.move a1 h8 . Chess.place whiteKnight a1) emptyBoard `shouldBe` (Just whiteKnight)
+  -- describe "Chess.move" $ do
+  --    it "no longer has piece in previous square" $ do
+  --      (Chess.examine a1 . Chess.move a1 h8 . Chess.place whiteKnight a1) emptyBoard `shouldBe` Nothing
+  --    it "has piece in new square" $ do
+  --      (Chess.examine h8 . Chess.move a1 h8 . Chess.place whiteKnight a1) emptyBoard `shouldBe` (Just whiteKnight)
 

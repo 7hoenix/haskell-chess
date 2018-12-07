@@ -93,16 +93,11 @@ playBoard = foldr (\(pos, piece) currentBoard -> place piece pos currentBoard)
 
 rows :: Board -> [[Square]]
 rows (Board board) =
-  [
-    (take 8 . drop 56) board,
-    (take 8 . drop 48) board,
-    (take 8 . drop 40) board,
-    (take 8 . drop 32) board,
-    (take 8 . drop 24) board,
-    (take 8 . drop 16) board,
-    (take 8 . drop 8) board,
-    (take 8 . drop 0) board
-  ]
+  reverse $ map (row board) [0..7]
+
+row :: [Square] -> Int -> [Square]
+row rawBoard index =
+  (take 8 . drop (8 * index)) rawBoard
 
 mapWithIndex :: (a -> Int -> b) -> [a] -> [b]
 mapWithIndex fn list = zipWith fn list [0..]
@@ -122,9 +117,3 @@ clearSquare position (Square maybePiece currentPosition)
 squareMatchesPosition :: Position -> Square -> Bool
 squareMatchesPosition position (Square maybePiece currentPosition) =
   position == currentPosition
-
--- addPieceToSquare :: Piece -> Position -> Square -> Square
--- addPieceToSquare piece position (Square maybePiece currentPosition)
---   | matches = (Square (Just piece) currentPosition)
---   | otherwise = (Square maybePiece currentPosition)
---   where matches = position == currentPosition
