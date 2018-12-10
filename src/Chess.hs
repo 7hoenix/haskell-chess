@@ -31,7 +31,7 @@ data PieceType = Monarch | Hand | Rook | Bishop | Knight | Pawn deriving (Show, 
 
 data Piece = Piece Team PieceType deriving (Eq, Show)
 
-data Team = White | Black deriving (Eq, Show)
+data Team = Black | White deriving (Eq, Show)
 
 data Position = Position Int Int deriving (Show, Eq)
 
@@ -49,25 +49,15 @@ instance Show Square where
   show (Square (Just (Piece White Pawn)) _) = "P"
   show (Square (Just _) _) = "z"
 
-whiteKnight :: Piece
-whiteKnight =
-  Piece White Knight
-
-whiteBishop :: Piece
-whiteBishop =
-  Piece White Bishop
-
-whiteHand :: Piece
-whiteHand =
-  Piece White Hand
-
 legal :: Position -> Board -> [Position]
 legal position board =
   case get position board of
     Nothing -> []
-    Just (Piece _ Monarch) -> legalMonarch position board
-    Just (Piece _ Rook) -> legalRook position board
-    _ -> []
+    Just (Piece team Monarch) -> legalMonarch team position board
+    Just (Piece team Hand) -> legalHand team position board
+    Just (Piece team Rook) -> legalRook team position board
+    Just (Piece team Bishop) -> legalBishop team position board
+    Just (Piece team Pawn) -> legalPawn team position board
 
 place :: Piece -> Position -> Board -> Board
 place piece position (Board board) =
@@ -105,7 +95,7 @@ printBoard board =
 playBoard :: Board
 playBoard = foldr (\(pos, piece) currentBoard -> place piece pos currentBoard)
                 emptyBoard
-                [(a1, whiteKnight), (a2, whiteBishop), (h8, whiteHand)]
+                [(a1, knight White), (a2, bishop White), (h8, hand White)]
 
 -- Piece constructor functions
 
@@ -338,9 +328,6 @@ row :: [Square] -> Int -> [Square]
 row rawBoard index =
   (take 8 . drop (8 * index)) rawBoard
 
-mapWithIndex :: (a -> Int -> b) -> [a] -> [b]
-mapWithIndex fn list = zipWith fn list [0..]
-
 addPieceToSquare :: Piece -> Position -> Square -> Square
 addPieceToSquare piece position (Square maybePiece currentPosition)
   | matches = (Square (Just piece) currentPosition)
@@ -357,13 +344,29 @@ squareMatchesPosition :: Position -> Square -> Bool
 squareMatchesPosition position (Square maybePiece currentPosition) =
   position == currentPosition
 
-legalMonarch :: Position -> Board -> [Position]
-legalMonarch position (Board board) =
-  diagonals position ++ crosses position
+legalMonarch :: Team -> Position -> Board -> [Position]
+legalMonarch team position board =
+  mapMaybe (\direction -> goOne direction position board) [N, NE, E, SE, S, SW, W, NW]
 
-legalRook :: Position -> Board -> [Position]
-legalRook position board =
+legalHand :: Team -> Position -> Board -> [Position]
+legalHand team position board =
+  foldMap (\direction -> goMany direction position [] board) [N, NE, E, SE, S, SW, W, NW]
+
+legalRook :: Team -> Position -> Board -> [Position]
+legalRook team position board =
   foldMap (\direction -> goMany direction position [] board) [N, E, S, W]
+
+legalBishop :: Team -> Position -> Board -> [Position]
+legalBishop team position board =
+  foldMap (\direction -> goMany direction position [] board) [NE, SE, SW, NW]
+
+legalPawn :: Team -> Position -> Board -> [Position]
+legalPawn team position board =
+  case team of
+    Black -> (mapMaybe (\direction -> goOne direction position board) [S])
+        ++ (mapMaybe (\direction -> goOneDiagonal team direction position board) [SE, SW])
+    White -> mapMaybe (\direction -> goOne direction position board) [N]
+        ++ (mapMaybe (\direction -> goOneDiagonal team direction position board) [NE, NW])
 
 goMany :: Direction -> Position -> [Position] -> Board -> [Position]
 goMany direction position line board =
@@ -372,31 +375,44 @@ goMany direction position line board =
     Just next -> goMany direction next (line ++ [next]) board
 
 goOne :: Direction -> Position -> Board -> Maybe Position
-goOne direction (Position row column) board =
-  case direction of
-    N -> if row + 1 > 7 then Nothing else Just $ Position (row + 1) column
-    NE -> if row + 1 > 7 || column + 1 > 7 then Nothing else Just $ Position (row + 1) (column + 1)
-    E -> if column + 1 > 7 then Nothing else Just $ Position row (column + 1)
-    SE -> if row - 1 < 0 || column + 1 > 7 then Nothing else Just $ Position (row - 1) (column + 1)
-    S -> if row - 1 < 0 then Nothing else Just $ Position (row - 1) column
-    SW -> if row - 1 < 0 || column - 1 < 0 then Nothing else Just $ Position (row - 1) (column - 1)
-    W -> if column - 1 < 0 then Nothing else Just $ Position row (column - 1)
-    NW -> if row + 1 > 7 || column - 1 < 0 then Nothing else Just $ Position (row + 1) (column - 1)
+goOne direction position board = do
+  nextPosition <- goOneHelp direction position board
+  pos <- notOccupied nextPosition board
+  return pos
 
-diagonals :: Position -> [Position]
-diagonals (Position row column) =
-  catMaybes [bottomLeft, bottomRight, topLeft, topRight]
-    where
-      bottomLeft = if row - 1 < 0 || column - 1 < 0 then Nothing else Just $ Position (row - 1) (column - 1)
-      bottomRight = if row - 1 < 0 || column + 1 > 7 then Nothing else Just $ Position (row - 1) (column + 1)
-      topLeft = if row + 1 > 7 || column - 1 < 0 then Nothing else Just $ Position (row + 1) (column - 1)
-      topRight = if row + 1 > 7 || column + 1 > 7 then Nothing else Just $ Position (row + 1) (column + 1)
+goOneHelp :: Direction -> Position -> Board -> Maybe Position
+goOneHelp direction (Position row column) board =
+  let
+    (updatedRow, updatedColumn) =
+      case direction of
+        N  -> ((row + 1), column)
+        NE -> ((row + 1), (column + 1))
+        E  -> (row, (column + 1))
+        SE -> ((row - 1), (column + 1))
+        S  -> ((row - 1), column)
+        SW -> ((row - 1), (column - 1))
+        W  -> (row, (column - 1))
+        NW -> ((row + 1), (column - 1))
+  in
+    makePosition updatedRow updatedColumn
 
-crosses :: Position -> [Position]
-crosses (Position row column) =
-  catMaybes [down, left, right, up]
-    where
-      down = if row - 1 < 0 then Nothing else Just $ Position (row - 1) column
-      left = if column - 1 < 0 then Nothing else Just $ Position row (column - 1)
-      right = if column + 1 > 7 then Nothing else Just $ Position row (column + 1)
-      up = if row + 1 > 7 then Nothing else Just $ Position (row + 1) column
+goOneDiagonal :: Team -> Direction -> Position -> Board -> Maybe Position
+goOneDiagonal team direction position board = do
+  nextPosition <- goOneHelp direction position board
+  pos <- occupiedWithEnemy team nextPosition board
+  return pos
+
+notOccupied :: Position -> Board -> Maybe Position
+notOccupied position board =
+  case get position board of
+    Nothing ->
+      Just position
+
+    _ ->
+      Nothing
+
+occupiedWithEnemy :: Team -> Position -> Board -> Maybe Position
+occupiedWithEnemy team position board =
+  case get position board of
+    Just (Piece pieceTeam _) -> if pieceTeam == team then Nothing else Just position
+    Nothing -> Nothing
