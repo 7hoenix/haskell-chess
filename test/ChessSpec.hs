@@ -39,10 +39,12 @@ spec = do
        (Chess.get h8 . Chess.move a1 h8 . Chess.place (knight White) a1) emptyBoard `shouldBe` (Just (knight White))
 
   describe "Chess.legal" $ do
-    it "knows monarch movement - corner" $ do
-      (Chess.legal a1 . Chess.place (monarch White) a1) emptyBoard `shouldBe` [a2, b1, b2]
+    it "knows monarch movement - bottom left" $ do
+      (Chess.legal a1 . Chess.place (monarch White) a1) emptyBoard `shouldBe` [b2, b1, a2]
+    it "knows monarch movement - top right" $ do
+      (Chess.legal h8 . Chess.place (monarch White) h8) emptyBoard `shouldBe` [g7, h7, g8]
     -- it "knows monarch movement - center" $ do
-    --   (Chess.legal . Chess.place whiteMonarch b2) emptyBoard `shouldBe` [a1, a2, a3, b1, b3, c1, c2, c3]
+    --   (Chess.legal b2 . Chess.place (monarch White) b2) emptyBoard `shouldBe` [a1, a2, a3, b1, b3, c1, c2, c3]
 
 
 -- Add support for checks

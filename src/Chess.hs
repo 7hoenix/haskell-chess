@@ -60,8 +60,10 @@ whiteHand =
   Piece White Hand
 
 legal :: Position -> Board -> [Position]
-legal position (Board board) =
-  []
+legal position board =
+  case get position board of
+    Nothing -> []
+    Just monarch -> legalMonarch position board
 
 place :: Piece -> Position -> Board -> Board
 place piece position (Board board) =
@@ -104,28 +106,22 @@ playBoard = foldr (\(pos, piece) currentBoard -> place piece pos currentBoard)
 -- Piece constructor functions
 
 monarch :: Team -> Piece
-monarch team =
-  Piece team Monarch
+monarch team = Piece team Monarch
 
 hand :: Team -> Piece
-hand team =
-  Piece team Hand
+hand team = Piece team Hand
 
 rook :: Team -> Piece
-rook team =
-  Piece team Rook
+rook team = Piece team Rook
 
 bishop :: Team -> Piece
-bishop team =
-  Piece team Bishop
+bishop team = Piece team Bishop
 
 knight :: Team -> Piece
-knight team =
-  Piece team Knight
+knight team = Piece team Knight
 
 pawn :: Team -> Piece
-pawn team =
-  Piece team Pawn
+pawn team = Piece team Pawn
 
 -- All Possible positions
 
@@ -356,3 +352,25 @@ clearSquare position (Square maybePiece currentPosition)
 squareMatchesPosition :: Position -> Square -> Bool
 squareMatchesPosition position (Square maybePiece currentPosition) =
   position == currentPosition
+
+legalMonarch :: Position -> Board -> [Position]
+legalMonarch position (Board board) =
+  diagonals position ++ crosses position
+
+diagonals :: Position -> [Position]
+diagonals (Position row column) =
+  catMaybes [bottomLeft, bottomRight, topLeft, topRight]
+    where
+      bottomLeft = if row - 1 < 0 || column - 1 < 0 then Nothing else Just $ Position (row - 1) (column - 1)
+      bottomRight = if row - 1 < 0 || column + 1 > 7 then Nothing else Just $ Position (row - 1) (column + 1)
+      topLeft = if row + 1 > 7 || column - 1 < 0 then Nothing else Just $ Position (row + 1) (column - 1)
+      topRight = if row + 1 > 7 || column + 1 > 7 then Nothing else Just $ Position (row + 1) (column + 1)
+
+crosses :: Position -> [Position]
+crosses (Position row column) =
+  catMaybes [down, left, right, up]
+    where
+      down = if row - 1 < 0 then Nothing else Just $ Position (row - 1) column
+      left = if column - 1 < 0 then Nothing else Just $ Position row (column - 1)
+      right = if column + 1 > 7 then Nothing else Just $ Position row (column + 1)
+      up = if row + 1 > 7 then Nothing else Just $ Position (row + 1) column
