@@ -5,7 +5,8 @@ module Chess
     , place
     , whiteKnight
     , remove
-    , examine
+    , move
+    , get
     , a1, a2
     , h8
     ) where
@@ -67,8 +68,16 @@ remove :: Position -> Board -> Board
 remove position (Board board) =
   Board $ map (\square -> clearSquare position square) board
 
-examine :: Position -> Board -> Maybe Piece
-examine position (Board board) =
+move :: Position -> Position -> Board -> Board
+move from to board =
+  case get from board of
+    Nothing ->
+      board
+    Just piece ->
+      (place piece to . remove from) board
+
+get :: Position -> Board -> Maybe Piece
+get position (Board board) =
   let
     (Square maybePiece _) =
       head $ filter (\square -> squareMatchesPosition position square) board
