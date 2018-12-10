@@ -37,6 +37,8 @@ data Position = Position Int Int deriving (Show, Eq)
 
 data Square = Square (Maybe Piece) Position deriving (Eq)
 
+data Direction = N | NE | E | SE | S | SW | W | NW deriving (Eq)
+
 instance Show Square where
   show (Square Nothing _) = " "
   show (Square (Just (Piece White Monarch)) _) = "M"
@@ -63,7 +65,9 @@ legal :: Position -> Board -> [Position]
 legal position board =
   case get position board of
     Nothing -> []
-    Just monarch -> legalMonarch position board
+    Just (Piece _ Monarch) -> legalMonarch position board
+    Just (Piece _ Rook) -> legalRook position board
+    _ -> []
 
 place :: Piece -> Position -> Board -> Board
 place piece position (Board board) =
@@ -356,6 +360,28 @@ squareMatchesPosition position (Square maybePiece currentPosition) =
 legalMonarch :: Position -> Board -> [Position]
 legalMonarch position (Board board) =
   diagonals position ++ crosses position
+
+legalRook :: Position -> Board -> [Position]
+legalRook position board =
+  foldMap (\direction -> goMany direction position [] board) [N, E, S, W]
+
+goMany :: Direction -> Position -> [Position] -> Board -> [Position]
+goMany direction position line board =
+  case goOne direction position board of
+    Nothing -> line
+    Just next -> goMany direction next (line ++ [next]) board
+
+goOne :: Direction -> Position -> Board -> Maybe Position
+goOne direction (Position row column) board =
+  case direction of
+    N -> if row + 1 > 7 then Nothing else Just $ Position (row + 1) column
+    NE -> if row + 1 > 7 || column + 1 > 7 then Nothing else Just $ Position (row + 1) (column + 1)
+    E -> if column + 1 > 7 then Nothing else Just $ Position row (column + 1)
+    SE -> if row - 1 < 0 || column + 1 > 7 then Nothing else Just $ Position (row - 1) (column + 1)
+    S -> if row - 1 < 0 then Nothing else Just $ Position (row - 1) column
+    SW -> if row - 1 < 0 || column - 1 < 0 then Nothing else Just $ Position (row - 1) (column - 1)
+    W -> if column - 1 < 0 then Nothing else Just $ Position row (column - 1)
+    NW -> if row + 1 > 7 || column - 1 < 0 then Nothing else Just $ Position (row + 1) (column - 1)
 
 diagonals :: Position -> [Position]
 diagonals (Position row column) =

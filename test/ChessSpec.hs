@@ -4,7 +4,7 @@ import Test.Hspec
 import Data.Either
 
 import Chess (legal, place, emptyBoard, remove, get, move
-             , knight, monarch
+             , knight, monarch, rook, hand, bishop, pawn
              , Team(..)
              , a1, a2, a3, a4, a5, a6, a7, a8
              , b1, b2, b3, b4, b5, b6, b7, b8
@@ -39,12 +39,19 @@ spec = do
        (Chess.get h8 . Chess.move a1 h8 . Chess.place (knight White) a1) emptyBoard `shouldBe` (Just (knight White))
 
   describe "Chess.legal" $ do
-    it "knows monarch movement - bottom left" $ do
-      (Chess.legal a1 . Chess.place (monarch White) a1) emptyBoard `shouldBe` [b2, b1, a2]
-    it "knows monarch movement - top right" $ do
-      (Chess.legal h8 . Chess.place (monarch White) h8) emptyBoard `shouldBe` [g7, h7, g8]
-    -- it "knows monarch movement - center" $ do
-    --   (Chess.legal b2 . Chess.place (monarch White) b2) emptyBoard `shouldBe` [a1, a2, a3, b1, b3, c1, c2, c3]
-
+    describe "knows monarch movement" $ do
+      it "bottom left corner" $ do
+        (Chess.legal a1 . Chess.place (monarch White) a1) emptyBoard `shouldMatchList` [b2, b1, a2]
+      it "top right corner" $ do
+        (Chess.legal h8 . Chess.place (monarch White) h8) emptyBoard `shouldMatchList` [g7, h7, g8]
+      it "center" $ do
+        (Chess.legal b2 . Chess.place (monarch White) b2) emptyBoard `shouldMatchList` [a1, a2, a3, b1, b3, c1, c2, c3]
+    describe "knows rook movement" $ do
+      it "bottom left corner" $ do
+        (Chess.legal a1 . Chess.place (rook White) a1) emptyBoard `shouldMatchList` [a2, a3, a4, a5, a6, a7, a8,
+                                                                                     b1, c1, d1, e1, f1, g1, h1]
+      it "top right corner" $ do
+        (Chess.legal h8 . Chess.place (rook White) h8) emptyBoard `shouldMatchList` [h1, h2, h3, h4, h5, h6, h7,
+                                                                                     a8, b8, c8, d8, e8, f8, g8]
 
 -- Add support for checks
