@@ -3,8 +3,10 @@ module Chess
     , emptyBoard
     , place
     , whiteKnight
-    , validPosition
     , remove
+    , makePosition
+    , validIndex
+    , Position
     ) where
 
 import Data.List
@@ -41,12 +43,12 @@ whiteKnight :: Piece
 whiteKnight =
   Piece White Knight
 
-validPosition :: Int -> Int -> Either String Position
-validPosition row column =
-  case (validIndex row, validIndex column) of
-    (Left _, _) -> Left $ "Row out of bounds: " ++ show row
-    (_, Left _) -> Left $ "Column out of bounds: " ++ show column
-    (Right validRow, Right validColumn) -> Right $ Position validRow validColumn
+-- validPosition :: Int -> Int -> Either String Position
+-- validPosition row column =
+--   case (validIndex row, validIndex column) of
+--     (Left _, _) -> Left $ "Row out of bounds: " ++ show row
+--     (_, Left _) -> Left $ "Column out of bounds: " ++ show column
+--     (Right validRow, Right validColumn) -> Right $ Position validRow validColumn
 
 place :: Piece -> Position -> Board -> Board
 place piece position (Board board) =
@@ -63,6 +65,11 @@ emptyBoard = Board $ concatMap (\row ->
 printBoard :: Board -> IO ()
 printBoard board = print board
 
+makePosition :: Int -> Int -> Maybe Position
+makePosition rank file
+  | validIndex rank && validIndex file = Just $ Position rank file
+  | otherwise = Nothing
+
 -- PRIVATE --
 
 addPieceToSquare :: Piece -> Position -> Square -> Square
@@ -77,7 +84,7 @@ clearSquare position (Square maybePiece currentPosition)
   | otherwise = (Square maybePiece currentPosition)
   where matches = position == currentPosition
 
-validIndex :: Int -> Either String ValidIndex
-validIndex n | n < 0 || n > 7 = Left $ "Index out of bounds: " ++ show n
-  | otherwise                 = Right n
+validIndex :: Int -> Bool
+validIndex n =
+  n >= 0 || n <= 7
 
