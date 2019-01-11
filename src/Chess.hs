@@ -1,6 +1,7 @@
 module Chess
     ( printBoard
     , emptyBoard
+    , currentGame
     , get
     , move
     , place
@@ -90,12 +91,16 @@ emptyBoard = Board $ concatMap (\row ->
 
 printBoard :: Board -> IO ()
 printBoard board =
-  print $ rows board
+  mapM_ print (rows board)
 
 playBoard :: Board
 playBoard = foldr (\(pos, piece) currentBoard -> place piece pos currentBoard)
                 emptyBoard
                 [(a1, knight White), (a2, bishop White), (h8, hand White)]
+
+currentGame :: IO ()
+currentGame =
+  printBoard playBoard
 
 -- Piece constructor functions
 
