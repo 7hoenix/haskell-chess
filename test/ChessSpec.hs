@@ -73,6 +73,7 @@ spec = do
     describe "knows bishop movement" $ do
       it "bottom left corner" $ do
         (Chess.legal a1 . Chess.place (bishop White) a1) emptyBoard `shouldMatchList` [b2, c3, d4, e5, f6, g7, h8]
+
     describe "knows pawn movement" $ do
       it "knows black pawns may only move towards row 1" $ do
         (Chess.legal a2 . Chess.place (pawn Black) a2) emptyBoard `shouldMatchList` [a1]
@@ -88,5 +89,17 @@ spec = do
           . Chess.place (pawn Black) a3
           . Chess.place (pawn Black) c3
           . Chess.place (pawn White) b2) emptyBoard `shouldMatchList` [a3, b3, c3]
+
+    describe "knows knight movement" $ do
+      it "bottom left corner" $ do
+        (Chess.legal a1 . Chess.place (knight Black) a1) emptyBoard `shouldMatchList` [b3, c2]
+      it "top right corner" $ do
+        (Chess.legal h8 . Chess.place (knight Black) h8) emptyBoard `shouldMatchList` [f7, g6]
+      it "center" $ do
+        (Chess.legal e4 . Chess.place (knight Black) e4) emptyBoard `shouldMatchList` [d2, c3, c5, d6, f6, g5, g3, f2]
+      it "cannot travel to a square occupied by its own team" $ do
+        (Chess.legal a1
+          . Chess.place (monarch White) b3
+          . Chess.place (knight White) a1) emptyBoard `shouldMatchList` [c2]
 
 -- Add support for checks
