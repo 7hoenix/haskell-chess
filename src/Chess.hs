@@ -60,6 +60,7 @@ legal position board =
     Just (Piece team Hand) -> legalHand team position board
     Just (Piece team Rook) -> legalRook team position board
     Just (Piece team Bishop) -> legalBishop team position board
+    Just (Piece team Knight) -> legalKnight team position board
     Just (Piece team Pawn) -> legalPawn team position board
 
 place :: Piece -> Position -> Board -> Board
@@ -377,6 +378,16 @@ legalRook team position board =
 legalBishop :: Team -> Position -> Board -> [Position]
 legalBishop team position board =
   foldMap (\direction -> goMany direction position [] board) [NE, SE, SW, NW]
+
+legalKnight :: Team -> Position -> Board -> [Position]
+legalKnight team position board =
+  mapMaybe (\(deltaRow, deltaColumn) -> goKnight (deltaRow, deltaColumn) position board) [(-2, -1), (-1, -2), (1, -2), (2, -1), (2, 1), (1, 2), (-1, 2), (-2, 1)]
+
+goKnight :: (Int, Int) -> Position -> Board -> Maybe Position
+goKnight (deltaRow, deltaColumn) (Position row column) board = do
+  nextPosition <- makePosition (deltaRow + row) (deltaColumn + column)
+  pos <- notOccupied nextPosition board
+  return pos
 
 legalPawn :: Team -> Position -> Board -> [Position]
 legalPawn team position board =
