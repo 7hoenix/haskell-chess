@@ -50,6 +50,11 @@ spec = do
         (Chess.legal a8 . Chess.place (monarch White) a8) emptyBoard `shouldMatchList` [a7, b7, b8]
       it "center" $ do
         (Chess.legal b2 . Chess.place (monarch White) b2) emptyBoard `shouldMatchList` [a1, a2, a3, b1, b3, c1, c2, c3]
+      it "cannot travel to a square occupied by its own team" $ do
+        (Chess.legal b2
+          . Chess.place (monarch White) b2
+          . Chess.place (pawn White) b3) emptyBoard `shouldMatchList` [a1, a2, a3, b1, c1, c2, c3]
+
     describe "knows hand movement" $ do
       it "bottom left corner" $ do
         (Chess.legal a1 . Chess.place (hand White) a1) emptyBoard `shouldMatchList` [a2, a3, a4, a5, a6, a7, a8,

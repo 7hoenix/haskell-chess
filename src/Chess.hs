@@ -8,6 +8,8 @@ module Chess
     , playBoard
     , remove
     , legal
+    , makePosition
+    , Position(..)
     , Team(..)
     , monarch, hand, rook, bishop, knight, pawn
     , a1, a2, a3, a4, a5, a6, a7, a8
@@ -83,6 +85,13 @@ get position (Board board) =
       head $ filter (\square -> squareMatchesPosition position square) board
   in
   maybePiece
+
+
+
+makePosition :: Int -> Int -> Maybe Position
+makePosition rank file
+  | validIndex rank && validIndex file = Just $ Position rank file
+  | otherwise = Nothing
 
 emptyBoard :: Board
 emptyBoard = Board $ concatMap (\row ->
@@ -324,6 +333,10 @@ h8 :: Position
 h8 = Position 7 7
 
 -- PRIVATE --
+
+validIndex :: Int -> Bool
+validIndex n =
+  n >= 0 && n <= 7
 
 rows :: Board -> [[Square]]
 rows (Board board) =
