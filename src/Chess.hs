@@ -11,6 +11,7 @@ module Chess
     , makePosition
     , Position(..)
     , Team(..)
+    , parsePosition
     , monarch, hand, rook, bishop, knight, pawn
     , a1, a2, a3, a4, a5, a6, a7, a8
     , b1, b2, b3, b4, b5, b6, b7, b8
@@ -24,6 +25,7 @@ module Chess
 
 import Data.List
 import Data.Maybe
+import Text.Trifecta
 
 data Board = Board [Square] deriving (Eq)
 
@@ -37,6 +39,13 @@ data Piece = Piece Team PieceType deriving (Eq, Show)
 data Team = Black | White deriving (Eq, Show)
 
 data Position = Position Int Int deriving (Show, Eq)
+
+parsePosition :: Parser Position
+parsePosition = do
+  col <- some integer
+  row <- some integer
+  return (Position col row)
+
 
 data Square = Square (Maybe Piece) Position deriving (Eq)
 
