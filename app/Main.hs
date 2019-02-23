@@ -10,11 +10,12 @@ import Text.Trifecta.Parser
 main :: IO ()
 main = do
   printBoard playBoard
-  putStrLn "Enter col"
-  col <- getLine
-  putStrLn "Enter row"
-  row <- getLine
+  putStrLn "Enter square"
+  square <- getLine
+  -- putStrLn "Enter row"
+  -- row <- getLine
 
-  parsedCol <- parseString parsePosition mempty "asdf"
-  putStrLn $ unwords [col, row]
+  let
+    parsedSquare = parseString parsePosition mempty square
+  print parsedSquare
   printBoard playBoard

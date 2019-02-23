@@ -25,12 +25,10 @@ module Chess
 
 import Data.List
 import Data.Maybe
+import Data.Char (digitToInt)
 import Text.Trifecta
 
-data Board = Board [Square] deriving (Eq)
-
-instance Show Board where
-  show (Board squares) = show squares
+newtype Board = Board [Square] deriving (Eq, Show)
 
 data PieceType = Monarch | Hand | Rook | Bishop | Knight | Pawn deriving (Show, Eq)
 
@@ -41,11 +39,16 @@ data Team = Black | White deriving (Eq, Show)
 data Position = Position Int Int deriving (Show, Eq)
 
 parsePosition :: Parser Position
-parsePosition = do
-  col <- some integer
-  row <- some integer
-  return (Position col row)
+parsePosition =
+  Position <$> parseIndex <*> parseIndex
 
+
+parseIndex :: Parser Int
+parseIndex = do
+  i <- digitToInt <$> digit
+  if validIndex i
+    then return i
+    else unexpected "INDEX OUT OF RANGE"
 
 data Square = Square (Maybe Piece) Position deriving (Eq)
 
